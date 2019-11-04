@@ -1,0 +1,5 @@
+profile: service
+defaultPackage: dev.gartman
+---
+testFramework: kotlintest
+sourceLanguage: kotlin
