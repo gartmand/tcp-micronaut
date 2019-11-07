@@ -10,6 +10,5 @@ import org.junit.jupiter.api.Assertions.assertEquals
 class EmployeeControllerTest : Spek({
 
     describe("/employee") {
-        //TODO:
     }
 })

@@ -1,14 +1,19 @@
 package dev.gartman
 
-import io.micronaut.http.HttpStatus
+import com.mongodb.reactivestreams.client.MongoClient
+import com.mongodb.reactivestreams.client.MongoCollection
 import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Get
+import io.micronaut.validation.Validated
+import io.reactivex.Flowable
 
-@Controller("/employee")
-class EmployeeController {
+@Controller("/\${employees.api.version}/employees")
+@Validated
+class EmployeeController(val config: EmployeeConfig, val mongoClient: MongoClient) {
 
     @Get("/")
-    fun index(): HttpStatus {
-        return HttpStatus.OK
-    }
+    fun getAll(): Flowable<Employee> = Flowable.fromPublisher(getCollection().find())
+
+    fun getCollection(): MongoCollection<Employee> = mongoClient.getDatabase(config.databaseName)
+            .getCollection(config.collectionName, Employee::class.java)
 }
