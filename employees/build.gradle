@@ -44,6 +44,7 @@ dependencies {
     testImplementation platform("io.micronaut:micronaut-bom:$micronautVersion")
     testImplementation "io.mockk:mockk:1.9.3"
     testImplementation "org.spekframework.spek2:spek-dsl-jvm:2.0.8"
+    testImplementation "org.jetbrains.kotlin:kotlin-test"
     testImplementation "de.flapdoodle.embed:de.flapdoodle.embed.mongo:2.0.1"
     testRuntimeOnly "org.spekframework.spek2:spek-runner-junit5:2.0.8"
 }
