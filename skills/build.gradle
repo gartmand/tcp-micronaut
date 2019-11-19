@@ -1,6 +1,7 @@
 plugins {
     id "net.ltgt.apt-eclipse" version "0.21"
     id "com.github.johnrengelman.shadow" version "5.0.0"
+    id "com.github.sherter.google-java-format" version "0.8"
     id "application"
 }
 
@@ -21,10 +22,15 @@ configurations {
 }
 
 dependencies {
+    compileOnly "org.projectlombok:lombok:1.18.10"
+    compile "io.micronaut.data:micronaut-data-jdbc:1.0.0.M5"
+    compile "io.micronaut.configuration:micronaut-flyway"
+    annotationProcessor "org.projectlombok:lombok:1.18.10" // Must be first annotation processor
     annotationProcessor platform("io.micronaut:micronaut-bom:$micronautVersion")
     annotationProcessor "io.micronaut:micronaut-inject-java"
     annotationProcessor "io.micronaut:micronaut-validation"
     annotationProcessor "io.micronaut.configuration:micronaut-openapi"
+    annotationProcessor "io.micronaut.data:micronaut-data-processor:1.0.0.M5"
     implementation platform("io.micronaut:micronaut-bom:$micronautVersion")
     implementation "io.micronaut:micronaut-inject"
     implementation "io.micronaut:micronaut-validation"
@@ -32,11 +38,12 @@ dependencies {
     implementation "io.micronaut:micronaut-management"
     implementation "io.swagger.core.v3:swagger-annotations"
     implementation "io.micronaut:micronaut-http-client"
-    implementation "io.micronaut.configuration:micronaut-postgres-reactive"
     implementation "io.micronaut:micronaut-discovery-client"
     implementation "io.micronaut:micronaut-http-server-netty"
     implementation "javax.annotation:javax.annotation-api"
     runtimeOnly "ch.qos.logback:logback-classic:1.2.3"
+    runtimeOnly "org.postgresql:postgresql:42.2.8"
+    runtimeOnly "io.micronaut.configuration:micronaut-jdbc-hikari"
     testAnnotationProcessor platform("io.micronaut:micronaut-bom:$micronautVersion")
     testAnnotationProcessor "io.micronaut:micronaut-inject-java"
     testImplementation platform("io.micronaut:micronaut-bom:$micronautVersion")

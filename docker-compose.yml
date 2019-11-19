@@ -35,11 +35,9 @@ services:
         build:
             context: ./skills
         environment:
-            POSTGRES_REACTIVE_CLIENT_HOST: skills-postgres
-            POSTGRES_REACTIVE_CLIENT_PORT: 5432
-            POSTGRES_REACTIVE_CLIENT_DATABASE: postgres
-            POSTGRES_REACTIVE_CLIENT_USER: postgres
-            POSTGRES_REACTIVE_CLIENT_PASSWORD: 'changeme'
+            POSTGRES_JDBC_URL: jdbc:postgresql://skills-postgres/postgres
+            POSTGRES_HOST: skills-postgres
+            POSTGRES_PASSWORD: 'changeme'
             CONSUL_HOST: consul
             CONSUL_PORT: 8500
         links:

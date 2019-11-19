@@ -6,3 +6,21 @@ micronaut:
 consul:
   client:
     defaultZone: "${CONSUL_HOST:localhost}:${CONSUL_PORT:8500}"
+---
+datasources:
+  default:
+    url: "${POSTGRES_JDBC_URL}"
+    driverClassName: org.postgresql.Driver
+    username: "${POSTGRES_USER:postgres}"
+    password: "${POSTGRES_PASSWORD:}"
+    dialect: POSTGRES
+---
+flyway:
+  datasources:
+    default:
+      locations: classpath:db/flyway
+---
+logging:
+  level:
+    org:
+      flywaydb: debug
