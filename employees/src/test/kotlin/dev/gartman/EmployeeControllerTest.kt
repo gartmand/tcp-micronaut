@@ -110,5 +110,68 @@ object EmployeeControllerTest : Spek({
                 assertNotNull(created.blockingGet().id)
             }
         }
+
+        describe("replacing an employee record") {
+            beforeEachTest {
+                val foundPublisher = mockk<FindPublisher<Employee>>()
+                val notFoundPublisher = mockk<FindPublisher<Employee>>()
+                val elements = Flowable.just(exampleEmployee.copy(skillIds = listOf("foo")))
+                val emptyFlowable = Flowable.empty<Employee>()
+
+                every { collection.findOneAndReplace(any<Bson>(), any<Employee>()) } answers {
+                    if (firstArg<Bson>().toString() == Filters.eq("_id", exampleObjectId).toString())
+                        foundPublisher
+                    else
+                        notFoundPublisher
+                }
+                every { foundPublisher.subscribe(any<Subscriber<in Employee>>()) } answers {
+                    elements.subscribe(firstArg<Subscriber<Employee>>())
+                }
+                every { notFoundPublisher.subscribe(any<Subscriber<in Employee>>()) } answers {
+                    emptyFlowable.subscribe(firstArg<Subscriber<Employee>>())
+                }
+            }
+
+            it("should return a Maybe of the updated employee record if the employee exists") {
+                assertEquals(
+                    exampleEmployee.copy(skillIds = listOf("foo")),
+                    controller.replace(exampleObjectId.toHexString(), exampleEmployee).blockingGet()
+                )
+            }
+
+            it("should return an empty Maybe if the employee record doesn't exist") {
+                assert(controller.replace(ObjectId().toHexString(), exampleEmployee).isEmpty.blockingGet())
+            }
+        }
+
+        describe("deleting an employee") {
+            beforeEachTest {
+                val foundPublisher = mockk<FindPublisher<Employee>>()
+                val notFoundPublisher = mockk<FindPublisher<Employee>>()
+                val elements = Flowable.just(exampleEmployee)
+                val emptyFlowable = Flowable.empty<Employee>()
+
+                every { collection.findOneAndDelete(any<Bson>()) } answers {
+                    if (firstArg<Bson>().toString() == Filters.eq("_id", exampleObjectId).toString())
+                        foundPublisher
+                    else
+                        notFoundPublisher
+                }
+                every { foundPublisher.subscribe(any<Subscriber<in Employee>>()) } answers {
+                    elements.subscribe(firstArg<Subscriber<Employee>>())
+                }
+                every { notFoundPublisher.subscribe(any<Subscriber<in Employee>>()) } answers {
+                    emptyFlowable.subscribe(firstArg<Subscriber<Employee>>())
+                }
+            }
+
+            it("should return a Maybe of the deleted employee if the record existed") {
+                assertEquals(exampleEmployee, controller.delete(exampleObjectId.toHexString()).blockingGet())
+            }
+
+            it("should return an empty Maybe if the employee doesn't exist") {
+                assert(controller.delete(ObjectId().toHexString()).isEmpty.blockingGet())
+            }
+        }
     }
 })
