@@ -16,11 +16,16 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertNotNull
 
-object EmployeeControllerTest : Spek({
+class EmployeeControllerTest : Spek({
     describe("The employees controller") {
         lateinit var employeeConfig: EmployeeConfig
         lateinit var mongoClient: MongoClient
         lateinit var collection: MongoCollection<Employee>
+        lateinit var foundPublisher: FindPublisher<Employee>
+        lateinit var notFoundPublisher: FindPublisher<Employee>
+        lateinit var foundFlowable: Flowable<Employee>
+        lateinit var notFoundFlowable: Flowable<Employee>
+
         val exampleObjectId = ObjectId()
         val exampleEmployee = Employee(
             exampleObjectId,
@@ -43,18 +48,27 @@ object EmployeeControllerTest : Spek({
 
             every { mongoClient.getDatabase(any<String>()) } returns database
             every { database.getCollection(any<String>(), Employee::class.java) } returns collection
+
+            foundPublisher = mockk<FindPublisher<Employee>>()
+            notFoundPublisher = mockk<FindPublisher<Employee>>()
+
+            foundFlowable = Flowable.just(exampleEmployee)
+            notFoundFlowable = Flowable.empty<Employee>()
+
+            every { foundPublisher.subscribe(any<Subscriber<in Employee>>()) } answers {
+                foundFlowable.subscribe(firstArg<Subscriber<Employee>>())
+            }
+            every { notFoundPublisher.subscribe(any<Subscriber<in Employee>>()) } answers {
+                notFoundFlowable.subscribe(firstArg<Subscriber<Employee>>())
+            }
         }
 
         val controller: EmployeeController by memoized { EmployeeController(employeeConfig, mongoClient) }
 
         describe("getting all employees") {
             beforeEachTest {
-                val findPublisher = mockk<FindPublisher<Employee>>()
-                val elements = Flowable.just(exampleEmployee)
-                every { collection.find() } returns findPublisher
-                every { findPublisher.subscribe(any<Subscriber<in Employee>>()) } answers {
-                    elements.subscribe(firstArg<Subscriber<Employee>>())
-                }
+                foundFlowable = Flowable.just(exampleEmployee)
+                every { collection.find() } returns foundPublisher
             }
 
             it("should return a Flowable of all employees in the collection") {
@@ -64,22 +78,11 @@ object EmployeeControllerTest : Spek({
 
         describe("getting a single employee by ID") {
             beforeEachTest {
-                val foundPublisher = mockk<FindPublisher<Employee>>()
-                val notFoundPublisher = mockk<FindPublisher<Employee>>()
-                val elements = Flowable.just(exampleEmployee)
-                val emptyFlowable = Flowable.empty<Employee>()
-
                 every { collection.find(any<Bson>()) } answers {
                     if (firstArg<Bson>().toString() == Filters.eq("_id", exampleObjectId).toString())
                         foundPublisher
                     else
                         notFoundPublisher
-                }
-                every { foundPublisher.subscribe(any<Subscriber<in Employee>>()) } answers {
-                    elements.subscribe(firstArg<Subscriber<Employee>>())
-                }
-                every { notFoundPublisher.subscribe(any<Subscriber<in Employee>>()) } answers {
-                    emptyFlowable.subscribe(firstArg<Subscriber<Employee>>())
                 }
             }
 
@@ -113,28 +116,17 @@ object EmployeeControllerTest : Spek({
 
         describe("replacing an employee record") {
             beforeEachTest {
-                val foundPublisher = mockk<FindPublisher<Employee>>()
-                val notFoundPublisher = mockk<FindPublisher<Employee>>()
-                val elements = Flowable.just(exampleEmployee.copy(skillIds = listOf("foo")))
-                val emptyFlowable = Flowable.empty<Employee>()
-
                 every { collection.findOneAndReplace(any<Bson>(), any<Employee>()) } answers {
                     if (firstArg<Bson>().toString() == Filters.eq("_id", exampleObjectId).toString())
                         foundPublisher
                     else
                         notFoundPublisher
                 }
-                every { foundPublisher.subscribe(any<Subscriber<in Employee>>()) } answers {
-                    elements.subscribe(firstArg<Subscriber<Employee>>())
-                }
-                every { notFoundPublisher.subscribe(any<Subscriber<in Employee>>()) } answers {
-                    emptyFlowable.subscribe(firstArg<Subscriber<Employee>>())
-                }
             }
 
             it("should return a Maybe of the updated employee record if the employee exists") {
                 assertEquals(
-                    exampleEmployee.copy(skillIds = listOf("foo")),
+                    exampleEmployee,
                     controller.replace(exampleObjectId.toHexString(), exampleEmployee).blockingGet()
                 )
             }
@@ -146,22 +138,11 @@ object EmployeeControllerTest : Spek({
 
         describe("deleting an employee") {
             beforeEachTest {
-                val foundPublisher = mockk<FindPublisher<Employee>>()
-                val notFoundPublisher = mockk<FindPublisher<Employee>>()
-                val elements = Flowable.just(exampleEmployee)
-                val emptyFlowable = Flowable.empty<Employee>()
-
                 every { collection.findOneAndDelete(any<Bson>()) } answers {
                     if (firstArg<Bson>().toString() == Filters.eq("_id", exampleObjectId).toString())
                         foundPublisher
                     else
                         notFoundPublisher
-                }
-                every { foundPublisher.subscribe(any<Subscriber<in Employee>>()) } answers {
-                    elements.subscribe(firstArg<Subscriber<Employee>>())
-                }
-                every { notFoundPublisher.subscribe(any<Subscriber<in Employee>>()) } answers {
-                    emptyFlowable.subscribe(firstArg<Subscriber<Employee>>())
                 }
             }
 
