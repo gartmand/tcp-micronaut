@@ -4,12 +4,19 @@ services:
         image: mongo
         ports:
             - 27017:27017
+    skills-postgres:
+        image: postgres
+        ports:
+            - 5432:5432
+        environment:
+            POSTGRES_PASSWORD: 'changeme'
     consul:
         image: consul
         ports:
             - 8500:8500
     employees:
-        image: employees:0.1
+        build:
+            context: ./employees
         environment:
             MICRONAUT_SERVER_HOST: employees
             MICRONAUT_SERVER_PORT: 8080
@@ -24,3 +31,19 @@ services:
             - 8080:8080
         depends_on:
             - employees-mongodb
+    skills:
+        build:
+            context: ./skills
+        environment:
+            POSTGRES_REACTIVE_CLIENT_HOST: skills-postgres
+            POSTGRES_REACTIVE_CLIENT_PORT: 5432
+            POSTGRES_REACTIVE_CLIENT_DATABASE: postgres
+            POSTGRES_REACTIVE_CLIENT_USER: postgres
+            POSTGRES_REACTIVE_CLIENT_PASSWORD: 'changeme'
+            CONSUL_HOST: consul
+            CONSUL_PORT: 8500
+        links:
+            - skills-postgres
+            - consul
+        depends_on:
+            - skills-postgres

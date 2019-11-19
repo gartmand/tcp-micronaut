@@ -3,16 +3,6 @@ micronaut:
   application:
     name: skills
 ---
-hystrix:
-  stream:
-    enabled: false
----
-postgres:
-  reactive:
-    client:
-      port: 5432
-      host: localhost
-      database: skills
-#      user: user
-#      password: password
-#      maxSize: 5
+consul:
+  client:
+    defaultZone: "${CONSUL_HOST:localhost}:${CONSUL_PORT:8500}"

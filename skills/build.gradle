@@ -1,17 +1,18 @@
 plugins {
     id "net.ltgt.apt-eclipse" version "0.21"
-    id "com.google.cloud.tools.jib" version "0.9.9"
     id "com.github.johnrengelman.shadow" version "5.0.0"
     id "application"
 }
 
-
 version "0.1"
 group "dev.gartman"
 
+sourceCompatibility = JavaVersion.VERSION_11
+targetCompatibility = JavaVersion.VERSION_11
+
 repositories {
     mavenCentral()
-    maven { url "https://jcenter.bintray.com" }
+    jcenter()
 }
 
 configurations {
@@ -32,8 +33,7 @@ dependencies {
     implementation "io.swagger.core.v3:swagger-annotations"
     implementation "io.micronaut:micronaut-http-client"
     implementation "io.micronaut.configuration:micronaut-postgres-reactive"
-    implementation "io.micronaut.configuration:micronaut-netflix-hystrix"
-    implementation "io.micronaut.kubernetes:micronaut-kubernetes-discovery-client"
+    implementation "io.micronaut:micronaut-discovery-client"
     implementation "io.micronaut:micronaut-http-server-netty"
     implementation "javax.annotation:javax.annotation-api"
     runtimeOnly "ch.qos.logback:logback-classic:1.2.3"
@@ -56,8 +56,6 @@ tasks.withType(JavaCompile) {
     options.encoding = "UTF-8"
     options.compilerArgs.add('-parameters')
 }
-
-// jib.to.image = 'gcr.io/skills/jib-image'
 
 shadowJar {
     mergeServiceFiles()
