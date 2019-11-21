@@ -44,6 +44,7 @@ dependencies {
     runtimeOnly "ch.qos.logback:logback-classic:1.2.3"
     runtimeOnly "org.postgresql:postgresql:42.2.8"
     runtimeOnly "io.micronaut.configuration:micronaut-jdbc-hikari"
+    testCompile "org.mockito:mockito-core:3.1.0"
     testAnnotationProcessor platform("io.micronaut:micronaut-bom:$micronautVersion")
     testAnnotationProcessor "io.micronaut:micronaut-inject-java"
     testImplementation platform("io.micronaut:micronaut-bom:$micronautVersion")
