@@ -32,7 +32,12 @@ class EmployeeController(val config: EmployeeConfig, val mongoClient: MongoClien
 
     @Put("/{id}")
     fun replace(id: String, @Body employee: Employee): Maybe<Employee> =
-        Flowable.fromPublisher(getCollection().findOneAndReplace(eq("_id", ObjectId(id)), employee)).firstElement()
+        Flowable.fromPublisher(
+            getCollection().findOneAndReplace(
+                eq("_id", ObjectId(id)),
+                employee.copy(id = ObjectId(id))
+            )
+        ).firstElement()
 
     @Delete("/{id}")
     fun delete(id: String): Maybe<Employee> =
